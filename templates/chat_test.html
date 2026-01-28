@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Chat</title>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        background: #f4f6f8;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+    }
+
+    .app {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        margin: auto;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-radius: 0px;
+        overflow: hidden;
+        background: #fff;
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+
+    /* SIDEBAR */
+    #sidebar {
+        width: 280px;
+        padding: 20px;
+        border-right: 1px solid #ddd;
+        display: flex;
+        flex-direction: column;
+        background: #fafafa;
+    }
+
+    #sidebar h2 {
+        margin-bottom: 15px;
+        color: #333;
+        text-align: center;
+    }
+
+    #searchInput {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        width: 100%;
+    }
+
+    #searchResults,
+    #inbox,
+    #groupList {
+        overflow-y: auto;
+        flex: 1;
+        margin-top: 10px;
+    }
+
+    .conversation, .group-item {
+        padding: 10px;
+        margin-bottom: 6px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        background: #fff;
+        transition: 0.2s;
+    }
+
+    .conversation:hover,
+    .group-item:hover {
+        background: #e6f7ff;
+        border-color: #91d5ff;
+    }
+
+    /* CENTER PANEL */
+    #centerPanel {
+        width: 300px;
+        padding: 20px;
+        border-right: 1px solid #ddd;
+        background: #f7f7f7;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    #centerPanel input, #centerPanel button {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    #centerPanel button {
+        background: #007BFF;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    #centerPanel button:hover {
+        background: #0056b3;
+    }
+
+    /* CHAT */
+    #chatContainer {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #fefefe;
+    }
+
+    #chatBox {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .message {
+        padding: 10px 15px;
+        border-radius: 20px;
+        max-width: 70%;
+        word-wrap: break-word;
+    }
+
+    .sent {
+        background: #dcf8c6;
+        align-self: flex-end;
+    }
+
+    .received {
+        background: #e7e5e5;
+        align-self: flex-start;
+    }
+
+    .system {
+        background: #f0f0f0;
+        color: gray;
+        align-self: center;
+        font-style: italic;
+    }
+
+    /* INPUT */
+    #inputContainer {
+        display: flex;
+        gap: 10px;
+        padding: 15px;
+        border-top: 1px solid #ddd;
+        background: #fafafa;
+        align-items: center;
+    }
+
+    #inputContainer input[type="text"] {
+        flex: 1;
+        padding: 12px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    #inputContainer input[type="file"] {
+        font-size: 12px;
+    }
+
+    #sendBtn {
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: none;
+        background: #128C7E;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    #sendBtn:hover {
+        background: #0f7a67;
+    }
+
+    /* LOGOUT BUTTON */
+    #logoutBtn {
+        margin-top: 15px;
+        padding: 10px;
+        background: #ff4d4f;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    #logoutBtn:hover {
+        background: #d9363e;
+    }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+        <h2>Inbox</h2>
+        <input type="text" id="searchInput" placeholder="Search users...">
+        <div id="searchResults"></div>
+        <div id="inbox"></div>
+        <button id="logoutBtn" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- CENTER PANEL -->
+    <div id="centerPanel">
+        <h3>Create Group</h3>
+        <input type="text" id="groupNameInput" placeholder="Group name...">
+        <button id="createGroupBtn">Create Group</button>
+
+        <div id="groupActions" style="display:none;">
+            <h4>Group Actions</h4>
+            <input type="number" id="groupUserIdInput" placeholder="User ID">
+            <button id="addMemberBtn">Add Member</button>
+            <button id="removeMemberBtn">Remove Member</button>
+        </div>
+
+        <h4>Your Groups</h4>
+        <div id="groupList"></div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="chatContainer">
+        <div id="chatBox"></div>
+        <div id="inputContainer">
+            <input type="file" id="imageInput" accept="image/*">
+            <input type="file" id="documentInput" accept=".pdf,.doc,.docx">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+
+</div>
+
+</body>
+
+
+<script>
+
+// --- const baseUrl = window.location.origin;   (removed) ---//
+
+async function getCurrentUser(token) {
+    const res = await authFetch("/api/me/");
+
+    if (!res.ok) throw new Error("Invalid token");
+    return res.json();
+}
+async function refreshAccessToken() {
+    const refreshToken = localStorage.getItem("refresh_token");
+
+    if (!refreshToken) {
+        logout();
+        return null;
+    }
+
+    try {
+        const res = await fetch("/api/token/refresh/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ refresh: refreshToken }),
+        });
+
+        if (!res.ok) {
+            logout();
+            return null;
+        }
+
+        const data = await res.json();
+        localStorage.setItem("access_token", data.access);
+        return data.access;
+
+    } catch (err) {
+        console.error("Refresh failed", err);
+        logout();
+        return null;
+    }
+}
+async function authFetch(url, options = {}) {
+    let accessToken = localStorage.getItem("access_token");
+
+    options.headers = {
+        ...(options.headers || {}),
+        "Authorization": `Bearer ${accessToken}`,
+    };
+
+    let response = await fetch(url, options);
+
+    // If access token expired
+    if (response.status === 401) {
+        const newToken = await refreshAccessToken();
+        if (!newToken) return response;
+
+        options.headers.Authorization = `Bearer ${newToken}`;
+        response = await fetch(url, options);
+    }
+
+    return response;
+}
+
+
+// ----------------- GLOBALS -----------------
+
+let socket = null;
+let currentUser = null;
+let activeRoomId = null;
+
+// ----------------- HELPERS -----------------
+function appendMessage(username, message, type="received") {
+    const chatBox = document.getElementById("chatBox");
+    const div = document.createElement("div");
+    div.className = `message ${type}`;
+    div.innerHTML = `<strong>${username}:</strong> ${message}`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+const token = localStorage.getItem("access_token");
+
+if (!token) {
+    window.location.href = "/login/";
+}
+
+function logout() {
+    const accessToken = localStorage.getItem("access_token");
+    const refreshToken = localStorage.getItem("refresh_token");
+
+    fetch("{% url 'logout' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + accessToken,
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            refresh: refreshToken
+        })
+    })
+    .then(res => {
+        if (res.status === 205 || res.status === 200) {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            window.location.href = "{% url 'login_page' %}";
+        } else {
+            alert("Logout failed");
+        }
+    });
+}
+
+document.getElementById("searchInput").addEventListener("keyup", async (e) => {
+    const query = e.target.value.trim();
+    const token = localStorage.getItem("access_token");
+
+    if (!query) {
+        document.getElementById("searchResults").innerHTML = "";
+        return;
+    }
+
+    const res = await authFetch(`/api/search/${query}/`);
+
+    const profiles = await res.json();
+    const results = document.getElementById("searchResults");
+    results.innerHTML = "";
+
+    profiles.forEach(profile => {
+        const div = document.createElement("div");
+        div.className = "conversation";
+        div.textContent = profile.user.username;
+
+        div.onclick = async () => {
+            const r = await authFetch(`/api/rooms/private/${profile.user.id}/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: profile.user.id })
+            });
+
+            const room = await r.json();
+            loadChat(room.room_id, profile.user.username, token);
+        };
+
+        results.appendChild(div);
+    });
+});
+
+    if (!localStorage.getItem("access_token")) {
+        window.location.href = "/login/";
+    }
+
+
+
+// ----------------- WEBSOCKET (ONE CONNECTION) -----------------
+async function connectWebSocket(token) {
+    currentUser = await getCurrentUser(token);
+
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
+    socket = new WebSocket(
+        `${protocol}://${window.location.host}/ws/user/?token=${encodeURIComponent(token)}`
+    );
+
+    socket.onopen = () => {
+        console.log("WebSocket connected as", currentUser.username);
+    };
+
+    socket.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        
+        //notification for other rooms
+
+        if (data.type === "notification"){
+            if (data.room_id !== activeRoomId){
+                showNotification(data);
+            }
+        }
+
+        if (data.room_id !== activeRoomId) return;
+
+        const type =
+            data.sender_username === currentUser.username
+                ? "sent"
+                : "received";
+
+
+        let content = "";
+
+        if (data.message){
+            content += data.message;
+        }
+
+        if (data.image_url) {
+            content += `
+                <br>
+                <img src="${data.image_url}"  
+                    alt="Image"
+                    style="max-width:200px; cursor:pointer;"
+                    onclick="openImage('${data.image_url}')">
+            `;
+        }
+        else if (data.document_url) {
+            content += `<br><a href="${data.document_url}" target="_blank">Download Document</a>`;
+        }
+
+
+        appendMessage(data.sender_username, content, type);
+    };
+
+    socket.onclose = () => {
+        console.log("WebSocket disconnected");
+    };
+}
+
+
+// ----------------- SEND MESSAGE -----------------
+async function sendMessage() {
+    if (!activeRoomId) return alert("Open a chat first");
+
+    const token = localStorage.getItem("access_token");
+    const messageText = document.getElementById("messageInput").value;
+    const imageFile = document.getElementById("imageInput").files[0];
+    const documentFile = document.getElementById("documentInput").files[0];
+
+    if (!messageText && !imageFile && !documentFile) {
+        alert("Enter a message or select an image/document");
+        return;
+    }
+
+    let endpoint = "";
+    let options = {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+    };
+
+    if (imageFile || documentFile) {
+
+        // Image/video -> upload route
+        endpoint = `/api/rooms/${activeRoomId}/upload/`;
+        const formData = new FormData();
+        if (messageText) formData.append("message", messageText);
+        if (imageFile) formData.append("image", imageFile);
+        if (documentFile) formData.append("document", documentFile);
+        options.body = formData;
+    } else {
+        // Text-only -> send route
+        endpoint = `/api/rooms/${activeRoomId}/send/`;
+        options.headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify({ message: messageText });
+    }
+
+    try {
+        const res = await authFetch(endpoint, options);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        
+        const savedMessage = await res.json();
+
+        // Notify WebSocket
+        socket.send(JSON.stringify({
+            room_id: activeRoomId,
+            message_id: savedMessage.id
+        }));
+
+        // Clear inputs
+        document.getElementById("messageInput").value = "";
+        document.getElementById("imageInput").value = "";
+        document.getElementById("documentInput").value = "";
+
+    } catch (error) {
+        console.error("Error sending message:", error);
+        alert("Error sending message. Check console.");
+    }
+}
+
+// ----------------- LOAD CHAT -----------------
+async function loadChat(roomId, roomName, token) {
+    activeRoomId = roomId;
+    document.getElementById("chatBox").innerHTML = "";
+    appendMessage("", `Chat: ${roomName}`);
+
+    let url = `/api/rooms/${roomId}/messages/`;
+    while (url) {
+        const res = await authFetch(url);
+
+        const data = await res.json();
+        data.results.forEach(msg => {
+            const type = msg.sender_username === currentUser.username ? "sent" : "received";
+            
+            let content = "";
+
+            if (msg.message){
+                content += msg.message;
+            }
+            if (msg.image_url) {
+                content += `
+                    <br>
+                    <img src="${msg.image_url}"
+                        alt="Image"
+                        style="max-width:200px; cursor:pointer;"
+                        onclick="openImage('${msg.image_url}')">
+                `;
+            }
+
+            if (msg.document_url) {
+                content += `<br><a href="${msg.document_url}" target="_blank">Download Document</a>`;
+            }
+
+            appendMessage(msg.sender_username, content, type);
+        });
+        url = data.next; // load next page (older messages)
+    }
+}
+
+// ----------------- LOAD INBOX -----------------
+async function loadInbox(token) {
+    await connectWebSocket(token);
+
+    const inbox = document.getElementById("inbox");
+    inbox.innerHTML = "";
+
+    const res = await authFetch(`/api/messages/${currentUser.id}/`);
+    const data = await res.json();
+    const rooms = data.results;
+
+    rooms.forEach(msg => {
+    const div = document.createElement("div");
+    div.className = "conversation";
+
+    div.innerHTML = `
+    <strong>
+        ${msg.other_user?.username || msg.sender_username}
+        ${msg.unread_count > 0 ? `<span style="color:red;"> (${msg.unread_count})</span>` : ""}
+    </strong><br>
+    <small>${msg.message}</small>
+`;
+
+
+    div.onclick = () => loadChat(msg.room_id, "Chat", token);
+
+    inbox.appendChild(div);
+});
+
+}
+
+// ------------ BUTTON -------------
+window.onload = () => {
+    loadInbox(token);
+    loadGroups(token);
+};
+
+document.getElementById("createGroupBtn").onclick = async () => {
+    const token = localStorage.getItem("access_token");
+    const groupName = document.getElementById("groupNameInput").value.trim();
+
+    if (!groupName) return alert("Enter group name");
+
+    // Create group API call
+
+    const res = await authFetch("/api/groups/create/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group_name: groupName })
+    });
+
+    if (!res.ok) {
+        alert("Failed to create group");
+        return;
+    }
+
+    const group = await res.json();
+    alert("Group created!");
+    loadChat(group.id, group.group_name, token);
+
+    if(group.is_creator){
+        document.getElementById("groupActions").style.display = "block";
+    }else{
+        document.getElementById("groupActions").style.display = "none";
+    }
+};
+
+document.getElementById("addMemberBtn").onclick = async () => {
+    const token = localStorage.getItem("access_token");
+    const userId = document.getElementById("groupUserIdInput").value;
+
+    if (!activeRoomId) return alert("Open a group first");
+    if (!userId) return alert("Enter user ID");
+
+    const res = await authFetch(`/api/groups/${activeRoomId}/add-member/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId })
+    });
+
+    const data = await res.json();
+    alert(data.detail);
+};
+
+
+document.getElementById("removeMemberBtn").onclick = async () => {
+    const token = localStorage.getItem("access_token");
+    const userId = document.getElementById("groupUserIdInput").value;
+
+    if (!activeRoomId) return alert("Open a group first");
+    if (!userId) return alert("Enter user ID");
+
+        const res = await authFetch(`/api/groups/${activeRoomId}/remove-member/${userId}/`, {
+    method: "DELETE"
+    });
+
+    const data = await res.json();
+    alert(data.detail);
+    };
+
+async function loadGroups(token) {
+    const res = await fetch("/api/groups/", {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    if (!res.ok) {
+        console.error("Failed to load groups");
+        return;
+    }
+
+    const groups = await res.json();
+    const groupList = document.getElementById("groupList");
+    groupList.innerHTML = "";
+
+    if (groups.length === 0) {
+        groupList.innerHTML = "<small>No groups yet</small>";
+        return;
+    }
+
+    groups.forEach(group => {
+        const div = document.createElement("div");
+        div.className = "group-item";
+        div.textContent = group.group_name;
+
+        div.onclick = () => {
+            loadChat(group.id, group.group_name, token);
+            document.getElementById("groupActions").style.display = "block";
+        };
+
+        groupList.appendChild(div);
+    });
+}
+
+document.getElementById("sendBtn").onclick = sendMessage;
+
+
+function showNotification(data) {
+    // Simple alert (replace later with toast / badge)
+    console.log("New message notification:", data);
+
+    const notif = document.createElement("div");
+    notif.style.background = "#128C7E";
+    notif.style.color = "white";
+    notif.style.padding = "10px";
+    notif.style.margin = "5px";
+    notif.style.borderRadius = "6px";
+    notif.style.cursor = "pointer";
+
+    notif.innerHTML = `
+        <strong>${data.sender_username}</strong><br>
+        <small>${data.message || "Sent an attachment"}</small>
+    `;
+
+    notif.onclick = () => {
+        loadChat(data.room_id, data.room_name, localStorage.getItem("access_token"));
+        notif.remove();
+    };
+
+    document.getElementById("sidebar").prepend(notif);
+}
+
+// async function loadChat(roomId, roomName, token) {
+//     activeRoomId = roomId;
+//     document.getElementById("chatBox").innerHTML = "";
+
+//     appendMessage("System", `Chat: ${roomName}`, "system");
+
+//     // 🔥 SHOW GROUP ACTIONS
+//     document.getElementById("groupActions").style.display = "block";
+
+// }
+
+// function openImage(src) {
+//     const modal = document.getElementById("imageModal");
+//     const img = document.getElementById("modalImage");
+
+//     img.src = src;
+//     modal.style.display = "flex";
+// }
+
+// document.getElementById("imageModal").onclick = () => {
+//     document.getElementById("imageModal").style.display = "none";
+// };
+
+
+
+function openImage(url) {
+    const modal = document.getElementById("imageModal");
+    const img = document.getElementById("modalImage");
+
+    img.src = url;
+    modal.style.display = "flex";
+}   
+
+function closeImage() {
+    const modal = document.getElementById("imageModal");
+    const img = document.getElementById("modalImage");
+
+    img.src = "";
+    modal.style.display = "none";
+}
+
+
+</script>
+
+<!-- Image Viewer Modal -->
+<div id="imageModal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.9);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    ">
+    
+    <!-- CLOSE BUTTON -->
+    <!-- <span onclick="closeImage()"
+          style="
+            position:absolute;
+            top:20px;
+            right:30px;
+            font-size:32px;
+            color:white;
+            cursor:pointer;
+            font-weight:bold;
+          ">
+        &times;
+    </span> -->
+
+    <!-- <div id="imageModal"
+     style="
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.8);
+        justify-content:center;
+        align-items:center;
+        z-index:9999;
+     "> -->
+
+    <span onclick="closeImage()"
+          style="
+            position:absolute;
+            top:20px;
+            right:30px;
+            font-size:30px;
+            color:white;
+            cursor:pointer;
+          ">
+        ✖
+    </span>
+
+    <img id="modalImage"
+         style="max-width:90%; max-height:90%; border-radius:8px;">
+</div>
+
+
+</div>  
+
+</body>
+</html>
