@@ -88,6 +88,13 @@ CHANNEL_LAYERS = {
 }
 
 
+print("MYSQL_DATABASE:", os.environ.get("MYSQL_DATABASE"))
+print("MYSQLUSER:", os.environ.get("MYSQLUSER"))
+print("MYSQLPASSWORD:", os.environ.get("MYSQLPASSWORD"))
+print("MYSQLHOST:", os.environ.get("MYSQLHOST"))
+print("MYSQLPORT:", os.environ.get("MYSQLPORT"))
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
