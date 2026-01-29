@@ -103,7 +103,8 @@ DATABASES = {
         "PASSWORD": os.environ.get("MYSQLPASSWORD"),
         "HOST": os.environ.get("MYSQLHOST"),
         "PORT": os.environ.get("MYSQLPORT"),
-        "URL":os.environ.get("MYSQL_URL")
+        "URL":os.environ.get("MYSQL_URL"),
+        "ROOTPASSWORD":os.environ.get("MYSQL_ROOT_PASSWORD")
     }
 }
 
