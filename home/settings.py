@@ -96,7 +96,9 @@ print("MYSQLPORT:", os.environ.get("MYSQLPORT"))
 
 
 DATABASES = {
-    "default": dj_database_url.parse(os.environ["MYSQL_URL"])
+    "default": dj_database_url.parse(os.environ["MYSQL_URL"]
+                                    conn_max_age=600,    
+                                    )
 }
 
 #DATABASES = {
