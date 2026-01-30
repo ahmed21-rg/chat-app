@@ -42,41 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ... keep your authFetch and refreshAccessToken functions below this ...
 
-
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("loginForm");
-    if(form){     
-    form.addEventListener("submit", async function (e) {
-        e.preventDefault(); 
-
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-:
-        try {
-            const response = await fetch("/api/login/", {
-                method: "POST",
-                headers {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.detail || "Invalid credentials");
-            }
-
-            localStorage.setItem("access_token", data.token.access);
-            localStorage.setItem("refresh_token", data.token.refresh);
-
-            // redirect
-            window.location.href = "/api/chat/";
-        } catch (error) {
-            document.getElementById("error").innerText = error.message;
-        }
-    });
-});
 async function authFetch(url, options = {}) {
   let accessToken = localStorage.getItem("access_token");
 
