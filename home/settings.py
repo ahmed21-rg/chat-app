@@ -1,4 +1,4 @@
-
+import dj_database_url
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -87,13 +87,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-
-print("MYSQL_DATABASE:", os.environ.get("MYSQL_DATABASE"))
-print("MYSQLUSER:", os.environ.get("MYSQLUSER"))
-print("MYSQLPASSWORD:", os.environ.get("MYSQLPASSWORD"))
-print("MYSQLHOST:", os.environ.get("MYSQLHOST"))
-print("MYSQLPORT:", os.environ.get("MYSQLPORT"))
-
+db_url = os.environ.get("DATABASE_URL", os.environ.get("MYSQL_URL"))
 
 DATABASES = {
     "default": dj_database_url.parse(os.environ["MYSQL_URL"],
