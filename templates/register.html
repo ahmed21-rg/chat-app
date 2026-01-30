@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f4f6f8;
+        }
+        .register-container {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 { text-align: center; margin-bottom: 30px; color:#333; }
+        input { width:100%; padding:12px 15px; margin-bottom:20px; border:1px solid #ccc; border-radius:8px; font-size:16px; }
+        input:focus { border-color:#007BFF; outline:none; }
+        button { width:100%; padding:12px; background-color:#007BFF; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer; }
+        button:hover { background-color:#0056b3; }
+        #error { color:red; text-align:center; margin-top:15px; }
+        p { text-align:center; margin-top:10px; }
+        a { color:#007BFF; text-decoration:none; }
+    </style>
+</head>
+<body>
+
+<div class="register-container">
+    <h2>Register</h2>
+
+    <form id="registerForm">
+        <input type="text" id="username" placeholder="Username" required autocomplete="username" />
+        <input type="email" id="email" placeholder="Email" required autocomplete="email" />
+        <input type="password" id="password" placeholder="Password" required autocomplete="new-password" />
+        <input type="password" id="password2" placeholder="Confirm Password" required autocomplete="new-password" />
+        <button type="submit">Register</button>
+    </form>
+
+    <p id="error"></p>
+    <p>Already have an account? <a href="/login/">Login here</a></p>
+</div>
+
+<script src="{% static 'js/register.js' %}"></script>
+</body>
+</html>
