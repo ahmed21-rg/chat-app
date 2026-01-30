@@ -1,6 +1,42 @@
 console.log("auth.js loaded");
 
 
+const registerForm = document.getElementById("registerForm");
+const errorElem = document.getElementById("error");
+
+registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+        username: document.getElementById("username").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        password2: document.getElementById("password2").value,
+    };
+
+    try {
+        const response = await fetch("/api/register/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Registration success → redirect to login page
+            window.location.href = "/login/";
+        } else {
+            errorElem.textContent = result.detail || "Registration failed!";
+        }
+    } catch (err) {
+        errorElem.textContent = "Server error, try again later!";
+    }
+});
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("loginForm");
 
