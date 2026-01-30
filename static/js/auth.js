@@ -1,55 +1,61 @@
 console.log("auth.js loaded");
 
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("loginForm");
+    
+    // This 'if' block prevents the error on the /chat/ page
+    if (form) {     
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault(); 
 
-const registerForm = document.getElementById("registerForm");
-const errorElem = document.getElementById("error");
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
 
-registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+            try {
+                const response = await fetch("/api/login/", {
+                    method: "POST",
+                    headers: { // Fixed the missing colon here
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
 
-    const data = {
-        username: document.getElementById("username").value,
-        email: document.getElementById("email").value,
-        password: document.getElementById("password").value,
-        password2: document.getElementById("password2").value,
-    };
+                const data = await response.json();
 
-    try {
-        const response = await fetch("/api/register/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
+                if (!response.ok) {
+                    throw new Error(data.detail || "Invalid credentials");
+                }
+
+                // Make sure your backend returns data.token.access 
+                // match this to your Serializer output!
+                localStorage.setItem("access_token", data.token.access);
+                localStorage.setItem("refresh_token", data.token.refresh);
+
+                window.location.href = "/api/chat/";
+            } catch (error) {
+                const errorElement = document.getElementById("error");
+                if (errorElement) errorElement.innerText = error.message;
+            }
         });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            // Registration success → redirect to login page
-            window.location.href = "/login/";
-        } else {
-            errorElem.textContent = result.detail || "Registration failed!";
-        }
-    } catch (err) {
-        errorElem.textContent = "Server error, try again later!";
     }
 });
+
+// ... keep your authFetch and refreshAccessToken functions below this ...
 
 
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("loginForm");
-
+    if(form){     
     form.addEventListener("submit", async function (e) {
         e.preventDefault(); 
 
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
-
+:
         try {
             const response = await fetch("/api/login/", {
                 method: "POST",
-                headers: {
+                headers {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ email, password }),
@@ -102,7 +108,7 @@ async function refreshAccessToken() {
   if (!refreshToken) return false;
 
   try {
-    const response = await fetch("api/token/refresh/", {
+    const response = await fetch("/api/token/refresh/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
